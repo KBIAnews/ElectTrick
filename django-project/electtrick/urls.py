@@ -15,7 +15,15 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+from django.conf.urls.static import static
+from django.conf import settings
+
+from elections.views import LegacyDetailView
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-]
+                  url(r'^admin/', admin.site.urls),
+                  url(r'l/(?P<slug>[\w-]+)/$', LegacyDetailView.as_view(), name='legacy'),
+              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+admin.site.site_header = 'ElectTrick'
+admin.site.site_title = 'ElectTrick'

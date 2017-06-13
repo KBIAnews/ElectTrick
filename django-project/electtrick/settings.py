@@ -20,18 +20,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'kdj5aw11fq-6e$xexhyfk7)ju8@4c6v*7zmzg@(uih)tofxswp'
+SECRET_KEY = os.environ['KBIA_BAKERIES_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-# Environment variables used by ElectTrick
-ET_DB_USER = os.environ.get('ET_DB_USER')
-ET_DB_PASS = os.environ.get('ET_DB_PASS')
-ET_AWS_ID = os.environ.get('ET_AWS_ID')
-ET_AWS_SECRET = os.environ.get('ET_AWS_SECRET')
 
 
 # Application definition
@@ -43,6 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'bakery',
+    'markdownify',
+    'elections',
 ]
 
 MIDDLEWARE = [
@@ -83,11 +80,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'electtrick',
-        'HOST': 'electtrick.cs0kfi7erovq.us-east-1.rds.amazonaws.com',
-        'USER': ET_DB_USER,
-        'PASSWORD': ET_DB_PASS,
+        'USER': os.getenv('KBIA_BAKERIES_DB_USER'),
+        'PASSWORD': os.getenv('KBIA_BAKERIES_DB_PASS'),
+        'HOST': os.getenv('KBIA_BAKERIES_DB_URL'),
         'PORT': '5432',
-    }
+    },
 }
 
 
@@ -109,6 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -125,19 +123,50 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/
+# https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
+STATICFILES_DIRS =( os.path.join(STATIC_ROOT, 'css/'),
+                    os.path.join(STATIC_ROOT, 'js/'),
+                    os.path.join(STATIC_ROOT, 'img/'),
+                    )
 
 # Django Bakery Settings'
 BUILD_DIR = os.path.join(__file__, 'build')
 
-#   Django Bakery AWS Settings
-AWS_S3_ENDPOINT = 'https://s3.amazonaws.com'
-AWS_BUCK­ET_­NAME = 'elections.kbia.fm'
-AWS_ACCESS_KEY_ID = ET_AWS_ID
-AWS_SECRET_ACCESS_KEY = ET_AWS_SECRET
-DEFAULT_ACL = 'public-read'
+# File Storage.
+# https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_STORAGE_BUCKET_NAME = 'media.kbia.org'
+AWS_LOCATION = 'mo-health-talks'
+AWS_ACCESS_KEY_ID = os.getenv('KBIA_BAKERIES_AWS_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('KBIA_BAKERIES_AWS_KEY')
+AWS_QUERYSTRING_AUTH = False
 
-#   Which views will be rendered.
-BAKERY_VIEWS = (,)
+# Django Bakery Settings
+BUILD_DIR = os.path.join(PROJECT_ROOT, 'baked')
+AWS_BUCKET_NAME = 'elections.kbia.fm'
+AWS_S3_ENDPOINT = 'https://s3.amazonaws.com'
+BAKERY_VIEWS= ('elections.views.LegacyDetailView',)
+
+# Django Markdownify Settings
+MARKDOWNIFY_WHITELIST_TAGS = [
+    'a',
+    'abbr',
+    'acronym',
+    'b',
+    'blockquote',
+    'em',
+    'i',
+    'li',
+    'ol',
+    'p',
+    'strong',
+    'ul',
+]

@@ -1,0 +1,34 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+{% load markdownify %}
+
+{% block title %}{{ object.name }}{% endblock %}
+
+{% block metablock %}
+<link rel="canonical" href="https://www.missourihealthtalks.org{{ object.get_absolute_url }}">
+<meta property="twitter:title" content="{{ object.name }}">
+<meta property="twitter:creator" content="kbia">
+<meta property="og:url" content="http://elections.kbia.fm{{ object.get_absolute_url }}">
+{% autoescape off %}
+{% endautoescape %}
+{% if object.photo %}
+<meta property="twitter:image:alt" content="{{object.name}}">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if object.contained %}
+<div class="container">
+    <p data-pym-src="{{object.embed_url}}">Loading...</p>
+    <script type="text/javascript" src="https://pym.nprapps.org/pym-loader.v1.min.js"></script>
+</div>
+{% else %}
+<p style="padding-top: 60px;"></p>
+<p data-pym-src="{{object.embed_url}}">Loading...</p>
+<script type="text/javascript" src="https://pym.nprapps.org/pym-loader.v1.min.js"></script>
+{% endif %}
+
+{% endblock %}
+
+{% block scriptyblock %}
+{% endblock scriptyblock %}
